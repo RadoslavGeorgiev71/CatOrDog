@@ -1,6 +1,8 @@
 import numpy as np
 import math
 
+import DataParser
+
 def ReLU(x):
     """
     Performs the ReLU activation function
@@ -41,7 +43,7 @@ def maxPooling(segment):
     return np.max(segment)
 
 class ConvolutionLayer1:
-    def __init__(self, channel_num=2, initialization_stategy=intializeHe,
+    def __init__(self, channel_num=3, initialization_stategy=intializeHe,
                   weight_dim=5, activation_function=ReLU, stride_channel=1,
                   pooling_dim=2, pooling_function=maxPooling, stride_pooling=2):
         weights = []
@@ -73,8 +75,9 @@ class ConvolutionLayer1:
 
         # apply the filter to the channels
         filter_result = []
-        for weights, bias in zip(self.weights, self.biases):
-            channel = self.applyFilter(matrix, weights, bias)
+        for i in range(0, len(self.weights)):
+            channel = matrix[:, :, i]
+            channel = self.applyFilter(channel, self.weights[i, :, :], self.biases[i])
             filter_result.append(channel)
 
         filter_result = np.array(filter_result)
@@ -109,7 +112,7 @@ class ConvolutionLayer1:
         for i in range(0, matrix.shape[0] - (weight_dim - 1), self.stride_channel):
             column_values= []
             for j in range(0, matrix.shape[1] - (weight_dim - 1), self.stride_channel):
-                matrix_segment = matrix[i : i + (weight_dim - 1), j : j + (weight_dim - 1)]
+                matrix_segment = matrix[i : i + weight_dim, j : j + weight_dim]
                 
                 # compute the entry of the filter
                 result = self.activation_function(np.sum(matrix_segment * weights) + bias) 
@@ -130,7 +133,7 @@ class ConvolutionLayer1:
         for i in range(0, channel.shape[0] - (self.pooling_dim - 1), self.stride_pooling):
             column_values = []
             for j in range(0, channel.shape[1] - (self.pooling_dim - 1), self.stride_pooling):
-                channel_segment = channel[i : i + (self.pooling_dim - 1), j : j + (self.pooling_dim - 1)]
+                channel_segment = channel[i : i + self.pooling_dim, j : j + self.pooling_dim]
 
                 # compute the entry of the pooling
                 result = self.pooling_function(channel_segment)
@@ -140,6 +143,13 @@ class ConvolutionLayer1:
             row_values.append(column_values)
         
         return row_values
+    
+layer1 = ConvolutionLayer1()
+data, _ = DataParser.getTrainData()
+sample = data[0]
+print(sample.shape)
+print(layer1.forward(sample))
+
 
 
 
