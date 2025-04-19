@@ -38,14 +38,12 @@ def transformImage(img):
 
     return img
 
-def getTrainData():
+def getTrainData(train_path="data/train", percentage = 0.2):
     """
     Get the train images as numpy arrays
     and their labels: 0 for cat, 1 for dog
     as numpy arrays
     """
-    train_path = "data/train"
-    percentage = 0.2
 
     train_cat_images = getImagesFromFile(train_path + "/cats", percentage)
     train_dog_images = getImagesFromFile(train_path + "/dogs", percentage)
@@ -53,20 +51,19 @@ def getTrainData():
 
     labels = np.array([0] * len(train_cat_images) + [1] * len(train_dog_images))
 
+    # shuffle the samples and their labels randomly
     permutation = np.random.permutation(len(train_set))
     train_set = train_set[permutation]
     labels = labels[permutation]
 
     return train_set, labels
 
-def getTestData():
+def getTestData(test_path="data/test", percentage = 0.2):
     """
     Get the test images as numpy arrays
     and their labels: 0 for cat, 1 for dog
     as numpy arrays
     """
-    test_path = "data/test"
-    percentage = 0.2
 
     test_cat_images = getImagesFromFile(test_path + "/cats", percentage)
     test_dog_images = getImagesFromFile(test_path + "/dogs", percentage)
@@ -74,6 +71,7 @@ def getTestData():
 
     labels = np.array([0] * len(test_cat_images) + [1] * len(test_dog_images))
 
+    # shuffle the samples and their labels randomly
     permutation = np.random.permutation(len(test_set))
     test_set = test_set[permutation]
     labels = labels[permutation]
