@@ -1,51 +1,17 @@
 import numpy as np
 import math
 
-import DataParser
-
-def ReLU(x):
-    """
-    Performs the ReLU activation function
-    """
-
-    if x < 0:
-        x = 0
-    assert(x >= 0)
-
-    return x
-
-def sigmoid(x):
-    """
-    Performs the sigmoid activation function
-    """
-
-    x = 1 / (1 + np.exp(-x))
-    assert(x > 0 and x < 1 )
-
-    return x
-
-def intializeHe(dim=5):
-    """
-    Intialize the weights using He initalization
-    most suitable with ReLU activation function
-    """
-    weights = np.random.randn(dim, dim) * np.sqrt(2.0 / dim)
-    assert(weights.shape[0] == weights.shape[1])
-
-    return weights
-
-def maxPooling(segment):
-    """
-    Performs the max pooling stategy
-    by selecting the largest of the values in the segment
-    """
-
-    return np.max(segment)
+import data_parser
+import cnn_utils as utils
 
 class ConvolutionLayer1:
-    def __init__(self, channel_num=3, initialization_stategy=intializeHe,
-                  weight_dim=5, activation_function=ReLU, stride_channel=1,
-                  pooling_dim=2, pooling_function=maxPooling, stride_pooling=2):
+    """
+    The fist layer of our network
+    All parameters have default values specified for the task(cats vs dogs)
+    """
+    def __init__(self, channel_num=3, initialization_stategy=utils.intializeHe,
+                  weight_dim=5, activation_function=utils.ReLU, stride_channel=1,
+                  pooling_dim=2, pooling_function=utils.maxPooling, stride_pooling=2):
         weights = []
         biases = []
         for i in range(0, channel_num):
@@ -64,7 +30,7 @@ class ConvolutionLayer1:
     def forward(self, matrix):
         """
         Performs a forward pass through the layer
-        by computing all the channels
+        by computing the filter and then the pooling for all channels
         """
         # insure we have a square matrix
         assert(matrix.shape[0] == matrix.shape[1])
@@ -145,7 +111,7 @@ class ConvolutionLayer1:
         return row_values
     
 layer1 = ConvolutionLayer1()
-data, _ = DataParser.getTrainData()
+data, _ = data_parser.getTrainData()
 sample = data[0]
 print(sample.shape)
 print(layer1.forward(sample))
