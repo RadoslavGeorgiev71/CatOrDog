@@ -24,10 +24,20 @@ def sigmoid(x):
 
 def intializeHe(dim=5):
     """
-    Intialize the weights using He initalization
-    most suitable with ReLU activation function
+    Intialize the weights using He initalization;
+    most suitable for ReLU activation function
     """
     weights = np.random.randn(dim, dim) * np.sqrt(2.0 / dim)
+    assert(weights.shape[0] == weights.shape[1])
+
+    return weights
+
+def initializeXaveir(dim=3):
+    """
+    Initialize the weights using Xavier initalization;
+    most suitable for Sigmoid activation function
+    """
+    weights = np.random.randn(dim, dim) * np.sqrt(1.0 / dim)
     assert(weights.shape[0] == weights.shape[1])
 
     return weights

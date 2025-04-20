@@ -1,7 +1,6 @@
 import numpy as np
 import math
 
-import data_parser
 import cnn_utils as utils
 
 class ConvolutionLayer1:
@@ -31,6 +30,7 @@ class ConvolutionLayer1:
         """
         Performs a forward pass through the layer
         by computing the filter and then the pooling for all channels
+        Returns a numpy array of matrices for each channel
         """
         # insure we have a square matrix
         assert(matrix.shape[0] == matrix.shape[1])
@@ -41,7 +41,7 @@ class ConvolutionLayer1:
 
         # apply the filter to the channels
         filter_result = []
-        for i in range(0, len(self.weights)):
+        for i in range(0, self.weights.shape[0]):
             channel = matrix[:, :, i]
             channel = self.applyFilter(channel, self.weights[i, :, :], self.biases[i])
             filter_result.append(channel)
@@ -109,12 +109,6 @@ class ConvolutionLayer1:
             row_values.append(column_values)
         
         return row_values
-    
-layer1 = ConvolutionLayer1()
-data, _ = data_parser.getTrainData()
-sample = data[0]
-print(sample.shape)
-print(layer1.forward(sample))
 
 
 
