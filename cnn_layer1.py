@@ -8,13 +8,13 @@ class ConvolutionLayer1:
     The fist layer of our network
     All parameters have default values specified for the task(cats vs dogs)
     """
-    def __init__(self, channel_num=3, initialization_stategy=utils.intializeHe,
+    def __init__(self, channel_num=3, initialization_stategy=utils.intialize_He,
                   weight_dim=5, activation_function=utils.ReLU, stride_channel=1,
-                  pooling_dim=2, pooling_function=utils.maxPooling, stride_pooling=2):
+                  pooling_dim=2, pooling_function=utils.max_pooling, stride_pooling=2):
         weights = []
         biases = []
         for i in range(0, channel_num):
-            weights.append(initialization_stategy(weight_dim))
+            weights.append(initialization_stategy(weight_dim, weight_dim))
             biases.append(0)
         self.weights = np.array(weights)
         self.biases = np.array(biases)

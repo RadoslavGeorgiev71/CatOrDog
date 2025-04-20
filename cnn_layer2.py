@@ -8,16 +8,16 @@ class ConvolutionLayer2:
     The second layer of our network
     All parameters have default values specified for the task(cats vs dogs)
     """
-    def __init__(self, channel_num=3, output_num=4, initialization_strategy=utils.initializeXaveir,
+    def __init__(self, channel_num=3, output_num=4, initialization_strategy=utils.initialize_Xaveir,
                   weight_dim=5, activation_function=utils.sigmoid, stride_channel=1,
-                  pooling_dim=2, pooling_function=utils.maxPooling, stride_pooling=2):
+                  pooling_dim=2, pooling_function=utils.max_pooling, stride_pooling=2):
         # weights have dimention output_num x channel_num x weight_dim x weight_dim
         weights = []
         biases = []
         for i in range(0, output_num):
             weight_channels = []
             for j in range(0, channel_num):
-                weight_channels.append(initialization_strategy(weight_dim))
+                weight_channels.append(initialization_strategy(weight_dim, weight_dim))
 
             weights.append(weight_channels)
             biases.append(0)
