@@ -83,12 +83,11 @@ class InputLayer:
         weight_grad = []
         bias_grad = []
         for i in range(0, self.channel_num):
-            print(dupstream[i, :, :].shape)
             single_input_dx = self.pooling_functions[i].backward(dupstream[i, :, :])
             single_input_dx = self.activation_functions[i].backward(single_input_dx)
             single_input_dx = self.filter_functions[i].backward(single_input_dx)
 
-            weight_grad.append(single_input_dx * self.cache[:, :, i])
+            weight_grad.append(single_input_dx)
             bias_grad.append(np.sum(single_input_dx))
 
         self.weight_grad = np.array(weight_grad)

@@ -56,10 +56,13 @@ class CNN_Network:
         self.output_layer.biases -= lr * self.output_layer.bias_grad
 
 print("Loading data...")
-data, _ = data_parser.getTrainData()
+data, _ = data_parser.getTrainData(percentage=0.01)
 sample = data[0]
 
 cnn = CNN_Network()
 prediction = cnn.forward(sample)
 print(prediction)
+
+loss, grad = utils.binary_cross_entropy(prediction, 1)
+cnn.backward(grad)
 

@@ -100,6 +100,7 @@ class HiddenLayer:
         """
         assert(dupstream.shape[0] == self.output_num)
 
+        input_grad = []
         weight_grad = []
         bias_grad = []
         for i in range(0, self.output_num):
@@ -111,20 +112,25 @@ class HiddenLayer:
             # threfore we sum over the whole matrix
             bias_grad.append(np.sum(single_output_dx))
 
+            input_grad_output = []
             weight_grad_output = []
             for j in range(0, self.input_num):
                 # compute derivatives befor filtering
-                single_input_dx = self.filter_functions[i][j].backward(single_output_dx)
+                single_weight_dx = self.filter_functions[i][j].backward(single_output_dx)
+                single_input_dx = self.filter_functions[i][j].deconvolution(single_output_dx)
                 
-                weight_grad_output.append(single_input_dx)
+                weight_grad_output.append(single_weight_dx)
+                input_grad_output.append(single_input_dx)   
 
             weight_grad.append(weight_grad_output)
+            input_grad.append(input_grad_output)
 
         self.weight_grad = np.array(weight_grad)
         self.bias_grad = np.array(bias_grad)
         assert(self.weights.shape == self.weight_grad.shape)
 
         # gradient of the input/downstem gradient
-        dx = np.sum(self.weight_grad * self.weights, axis=0)
-        print(dx.shape)
+        input_grad = np.array(input_grad)
+        dx = input_grad.sum(axis=0)
+        
         return dx
