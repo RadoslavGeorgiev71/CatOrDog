@@ -92,7 +92,7 @@ class HiddenLayer:
 
         pooling_results = np.array(pooling_results)
 
-        return pooling_result
+        return pooling_results
     
     def backward(self, dupstream):
         """
@@ -122,9 +122,9 @@ class HiddenLayer:
 
         self.weight_grad = np.array(weight_grad)
         self.bias_grad = np.array(bias_grad)
-        assert(self.weights.shape == weight_grad.shape)
+        assert(self.weights.shape == self.weight_grad.shape)
 
         # gradient of the input/downstem gradient
         dx = np.sum(self.weight_grad * self.weights, axis=0)
-
+        print(dx.shape)
         return dx

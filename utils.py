@@ -28,6 +28,8 @@ class Filter:
         self.dim = dim
         self.stride = stride
 
+        self.cache = None
+        self.weights = None
         self.windows = None
 
     def forward(self, matrix, weights):
@@ -35,6 +37,10 @@ class Filter:
         Perform a filter specified by the weights on the matrix.
         """
         assert(weights.shape == (self.dim, self.dim))
+
+        # save the original matrix and weights to be used in backpropagation
+        self.cache = matrix
+        self.weights = weights
 
         # get the dimensions of the input matrix and weights
         matrix_height, matrix_width = matrix.shape
@@ -51,7 +57,7 @@ class Filter:
         # save for backpropagation
         self.windows = windows
         
-        # reshape windows for matrix multiplication
+        # reshape windows in order to perform matrix multiplication
         # shape: (output_height * output_weight, weights_height * weights_width)
         windows_reshaped = windows.reshape(-1, weights_height * weights_width) 
         # shape: (weights_height * weights_width, )
@@ -66,12 +72,42 @@ class Filter:
     
     def backward(self, dupstream):
         """
-        Computes and returns the gradients of the entries.
+        Computes and returns the gradients for the weights.
         """
-        assert(dupstream.shape == (self.windows.shape[2], self.windows.shape[3]))
+        assert(dupstream.shape == (self.windows.shape[0], self.windows.shape[1]))
 
-        # multiply each entry in the windows by the matrix dupstream
-        dx = np.einsum('ijkl,kl->ij', self.windows, dupstream)
+        # multiply each matrix in the windows by the corresponding entry in dupstream
+        dx = self.windows * dupstream[..., np.newaxis, np.newaxis]
+        dx = np.sum(dx, axis=(0, 1))
+
+         
+        stride = 1
+        weights_height, weights_width = weights.shape
+        matrix_height, matrix_width = a.shape
+
+        # Calculate output dimensions based on stride and filter size
+        output_height = (matrix_height - weights_height) // stride + 1
+        output_width = (matrix_width - weights_width) // stride + 1
+
+        # Generate indices for the windows in the original matrix (a)
+        row_indices = np.arange(output_height)[:, None] * stride  # Shape: (output_height, 1)
+        col_indices = np.arange(output_width)[None, :] * stride  # Shape: (1, output_width)
+
+        # Generate grid of row and column indices for each window position
+        window_row_indices = row_indices + np.arange(weights_height)  # Shape: (output_height, weights_height)
+        window_col_indices = col_indices + np.arange(weights_width)  # Shape: (output_width, weights_width)
+
+        # Broadcast the window indices for the full grid of windows
+        window_row_indices = np.tile(window_row_indices, (output_width, 1)).T  # Shape: (output_height, output_width, weights_height)
+        window_col_indices = np.tile(window_col_indices, (output_height, 1)).T  # Shape: (output_height, output_width, weights_width)
+
+        # Flatten the window indices for easy indexing
+        window_row_indices_flat = window_row_indices.reshape(-1)
+        window_col_indices_flat = window_col_indices.reshape(-1)
+
+        # Now, let's compute the index positions within the windows
+        # The position in the window is just the relative row/col indices in the filter
+        window_positions = np.array(np.meshgrid(np.arange(weights_height), np.arange(weights_width))).T.reshape(-1, 2)
 
         return dx
 
@@ -86,7 +122,7 @@ class ReLU:
 
     def forward(self, x):
         """
-        Computes the sigmoid activation function.
+        Computes the ReLU activation function.
         """
         y = np.maximum(0, x)
         self.cache = y
@@ -189,9 +225,11 @@ class MaxPooling:
 def binary_cross_entropy(prediction, label):
     """
     Computes the loss using binary cross-entropy.
+    And its gradient with respect to the prediction.
     Most suitable for binary classfication
     and sigmoid activation function.
     """
     loss = -label * np.log(prediction) - (1 - label) * np.log(1 - prediction)
+    grad = -label / prediction + (1 - label) / (1 - prediction)
 
-    return loss
+    return loss, grad

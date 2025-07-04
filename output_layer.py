@@ -6,17 +6,18 @@ class OutputLayer:
     """
     The final layer of our CNN.
     """
-    def __init__(self, output_size=1, initialization_strtegy=utils.intialize_He,
+    def __init__(self, output_num=1, initialization_strtegy=utils.intialize_He,
                   activation_function=utils.Sigmoid()):
-        self.output_size = output_size
+        self.output_num = output_num
 
         self.weights = []
-        self.biases = np.zeros(output_size)
+        self.biases = np.zeros(output_num)
         
         self.initialization_strtegy = initialization_strtegy
         self.activation_function = activation_function
 
         self.cache = None
+        self.cache_shape = None
         self.weight_grad = None
         self.bias_grad = None
 
@@ -25,13 +26,15 @@ class OutputLayer:
         Performs a forward pass through the layer
         Returns a numpy array of output entries
         """
+        self.cache_shape = input.shape
+
         # flatten the input into a 1d numpy array
         input = input.flatten()
         # cache the input to be used in the backward pass
-        self.cache = input
+        self.cache = input.reshape((input.shape[0], 1))
 
         if not self.weights:
-            self.weights = self.initialization_strtegy(input.shape[0], self.output_size)
+            self.weights = self.initialization_strtegy(input.shape[0], self.output_num)
 
         z = self.weights.T @ input + self.biases
         result = self.activation_function.forward(z)
@@ -42,11 +45,11 @@ class OutputLayer:
         """
         Performs a backward pass through the layer.
         """
-        dx = self.activation_function.backward(dupstream)
+        dx = self.activation_function.backward(dupstream).reshape((self.output_num, 1))
 
-        self.weight_grad = np.dot(self.cache.T, dx) 
+        self.weight_grad = np.dot(self.cache, dx) 
         self.bias_grad = dx
 
         dx = np.dot(dx, self.weights.T)
 
-        return dx.reshape(self.cache.shape)
+        return dx.reshape(self.cache_shape)

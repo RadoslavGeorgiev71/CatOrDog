@@ -28,11 +28,38 @@ class CNN_Network:
         output_result = self.output_layer.forward(hidden_result)
 
         return output_result
+    
+    def backward(self, dupsteam):
+        """
+        Performs a backward pass through the network.
+        Returns the gradients for the initial input.
+        """
+        dx = dupsteam
+        dx = self.output_layer.backward(dx)
+        dx = self.hidden_layer.backward(dx)
+        dx = self.input_layer.backward(dx)
 
+        return dx
+    
+    def optimize_network(self, lr):
+        """
+        Performs a single optimization of the weights and biases of the layers
+        lr: learning rate
+        """
+        self.input_layer.weights -= lr * self.input_layer.weight_grad
+        self.input_layer.biases -= lr * self.input_layer.bias_grad
 
+        self.hidden_layer.weights -= lr * self.hidden_layer.weight_grad
+        self.hidden_layer.biases -= lr * self.hidden_layer.bias_grad
+        
+        self.output_layer.weights -= lr * self.output_layer.weight_grad
+        self.output_layer.biases -= lr * self.output_layer.bias_grad
+
+print("Loading data...")
 data, _ = data_parser.getTrainData()
 sample = data[0]
 
 cnn = CNN_Network()
+prediction = cnn.forward(sample)
+print(prediction)
 
-print(cnn.forward(sample))
